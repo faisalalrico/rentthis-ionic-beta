@@ -1,0 +1,63 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/tab4"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Update Profil</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form (ngSubmit)="onSubmit()" enctype="multipart/form-data">
+    <ion-item *ngIf="userData?.ktp_status !== 'verified'; else ktpVerified">
+      <ion-label position="stacked">KTP</ion-label>
+      <input type="file" (change)="onFileChange($event, 'ktp')">
+      <ion-text>Status: {{ userData?.ktp_status || 'unverified' }}</ion-text>
+    </ion-item>
+    <ng-template #ktpVerified>
+      <ion-item>
+        <ion-label position="stacked">KTP</ion-label>
+        <ion-text color="success">Status: verified ✅</ion-text>
+      </ion-item>
+    </ng-template>
+
+    <ion-item *ngIf="userData?.sim_a_status !== 'verified'; else simAVerified">
+      <ion-label position="stacked">SIM A</ion-label>
+      <input type="file" (change)="onFileChange($event, 'sim_a')">
+      <ion-text>Status: {{ userData?.sim_a_status || 'unverified' }}</ion-text>
+    </ion-item>
+    <ng-template #simAVerified>
+      <ion-item>
+        <ion-label position="stacked">SIM A</ion-label>
+        <ion-text color="success">Status: verified ✅</ion-text>
+      </ion-item>
+    </ng-template>
+
+    <ion-item *ngIf="userData?.sim_c_status !== 'verified'; else simCVerified">
+      <ion-label position="stacked">SIM C</ion-label>
+      <input type="file" (change)="onFileChange($event, 'sim_c')">
+      <ion-text>Status: {{ userData?.sim_c_status || 'unverified' }}</ion-text>
+    </ion-item>
+    <ng-template #simCVerified>
+      <ion-item>
+        <ion-label position="stacked">SIM C</ion-label>
+        <ion-text color="success">Status: verified ✅</ion-text>
+      </ion-item>
+    </ng-template>
+
+
+    <ion-button
+      expand="full"
+      type="submit"
+      class="ion-margin-top"
+      *ngIf="!(
+        userData?.ktp_status === 'verified' &&
+        userData?.sim_a_status === 'verified' &&
+        userData?.sim_c_status === 'verified'
+      )"
+    >
+      Upload
+    </ion-button>
+
+  </form>
+</ion-content>

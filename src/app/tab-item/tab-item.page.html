@@ -1,0 +1,57 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/tab1"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detail Item</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content *ngIf="item">
+  <ion-card>
+    <img [src]="getImageUrl(item.image_path)" alt="{{ item.name }}" />
+    <ion-card-header>
+      <ion-card-title>{{ item.name }}</ion-card-title>
+      <ion-card-subtitle>{{ item.brand }}</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <p>{{ item.description }}</p>
+      <p><strong>Harga:</strong> {{ item.price | currency:'IDR' }}</p>
+      <p><strong>Status:</strong> {{ item.status }}</p>
+      <p><strong>Tipe:</strong> {{ item.type }}</p>
+      <p><strong>License:</strong> {{ item.license_code }}</p>
+      <p><strong>Transmisi:</strong> {{ item.transmisi }}</p>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-item>
+    <ion-label position="floating">Durasi Sewa (hari)</ion-label>
+    <ion-input type="number" [(ngModel)]="days" min="1"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="floating">Mulai dari (YYYY-MM-DD)</ion-label>
+    <ion-input
+      type="date"
+      [(ngModel)]="startFrom"
+      [min]="startFrom"
+    ></ion-input>
+  </ion-item>
+
+  <ng-container *ngIf="isLoggedIn && userData; else loginBtn">
+    <ion-button expand="block" (click)="tambahKeCart()">Tambah ke Keranjang</ion-button>
+  </ng-container>
+  <ng-template #loginBtn>
+    <ion-button expand="block" (click)="goToLogin()">
+      Login untuk melihat profil lengkap
+    </ion-button>
+  </ng-template>
+
+  <p *ngIf="message" [style.color]="messageColor" style="margin: 10px 0;">
+    {{ message }}
+  </p>
+</ion-content>
+
+<ion-content *ngIf="!item && isLoading">
+  <p>Loading data...</p>
+</ion-content>

@@ -1,17 +1,102 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>
-      Tab 1
-    </ion-title>
+    <ion-title>Daftar Item</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 1</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-card class="ion-padding">
+  <ion-searchbar [(ngModel)]="searchTerm" placeholder="Cari nama atau deskripsi..." debounce="300"></ion-searchbar>
 
-  <app-explore-container name="Tab 1 page"></app-explore-container>
+  <ion-button expand="block" fill="outline" (click)="showFilter = !showFilter">
+    {{ showFilter ? 'Sembunyikan Filter' : 'Tampilkan Filter' }}
+  </ion-button>
+
+  <div *ngIf="showFilter" class="ion-margin-top">
+    <ion-item>
+      <ion-label position="stacked">Harga Minimum</ion-label>
+      <ion-input type="number" [(ngModel)]="tempMinPrice"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Harga Maksimum</ion-label>
+      <ion-input type="number" [(ngModel)]="tempMaxPrice"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Brand</ion-label>
+      <ion-select [(ngModel)]="tempBrand">
+        <ion-select-option value="">Semua</ion-select-option>
+        <ion-select-option *ngFor="let brand of brands" [value]="brand">{{ brand }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Transmisi</ion-label>
+      <ion-select [(ngModel)]="tempTransmisi">
+        <ion-select-option value="">Semua</ion-select-option>
+        <ion-select-option value="manual">Manual</ion-select-option>
+        <ion-select-option value="otomatis">Otomatis</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Jenis</ion-label>
+      <ion-select [(ngModel)]="tempType">
+        <ion-select-option value="">Semua</ion-select-option>
+        <ion-select-option value="car">Mobil</ion-select-option>
+        <ion-select-option value="motorcycle">Motor</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-button expand="block" (click)="applyFilters()">Terapkan Filter</ion-button>
+    <ion-button expand="block" fill="clear" (click)="clearFilters()">Reset</ion-button>
+  </div>
+</ion-card>
+
+<ion-content>
+  <div class="ion-padding">
+    <ng-container *ngIf="isLoggedIn && userData; else loginBtn">
+      <h2>Selamat datang, {{ userData.name }}!</h2>
+    </ng-container>
+    <ng-template #loginBtn>
+      <ion-button expand="block" (click)="goToLogin()">
+        Login untuk melihat profil lengkap
+      </ion-button>
+    </ng-template>
+  </div>
+
+  <ion-refresher slot="fixed" (ionRefresh)="loadItems($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-list *ngIf="filteredItems.length > 0; else noData">
+    <ion-item *ngFor="let item of filteredItems" button (click)="goToItem(item.id)">
+      <ion-thumbnail slot="start">
+        <img [src]="getImageUrl(item.image_path)" alt="{{ item.name }}" />
+      </ion-thumbnail>
+      <ion-label>
+        <h2>{{ item.name }}</h2>
+        <p>{{ item.description }}</p>
+        <p><strong>Brand:</strong> {{ item.brand }}</p>
+        <p><strong>Harga:</strong> {{ item.price | currency:'IDR' }}</p>
+        <p><strong>Status:</strong> {{ item.status }}</p>
+        <p><strong>Tipe:</strong> {{ item.type }}</p>
+        <p><strong>License:</strong> {{ item.license_code }}</p>
+        <p><strong>Transmisi:</strong> {{ item.transmisi }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ng-template #noData>
+    <p class="ion-padding">Tidak ada item untuk ditampilkan.</p>
+  </ng-template>
+
+  <ion-spinner *ngIf="isLoading" name="crescent" class="spinner-center"></ion-spinner>
 </ion-content>
+
+<style>
+.spinner-center {
+  display: block;
+  margin: 50% auto;
+}
+</style>
