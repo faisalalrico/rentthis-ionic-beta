@@ -1,17 +1,20 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>
-      Tab 3
-    </ion-title>
+    <ion-title>Notifikasi</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 3</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <ion-list *ngIf="notifications.length > 0">
+    <ion-item *ngFor="let notif of notifications" [class.unread]="notif.status === 'sent'">
+      <ion-label>
+        <h2>{{ notif.message }}</h2>
+        <p>{{ notif.created_at | date: 'medium' }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
 
-  <app-explore-container name="Tab 3 page"></app-explore-container>
+  <div *ngIf="notifications.length === 0" class="ion-padding">
+    <p>Tidak ada notifikasi.</p>
+  </div>
 </ion-content>

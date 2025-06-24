@@ -31,7 +31,7 @@ export class LoginPage {
     } catch (err) {
       await loading.dismiss();
       const toast = await this.toastCtrl.create({
-        message: 'Login gagal. Periksa email/password.',
+        message: JSON.stringify(err) || 'Login gagal. Periksa email/password.',
         duration: 2000,
         color: 'danger',
       });

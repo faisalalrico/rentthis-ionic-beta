@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Detail Pembayaran Manual</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content *ngIf="!isLoading">
+  <ng-container *ngIf="transaction; else errorTemplate">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{ transaction.item.name }}</ion-card-title>
+        <ion-card-subtitle>Durasi: {{ transaction.days }} hari</ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <p>Total Harga: Rp {{ transaction.total_price }}</p>
+        <p>Mulai dari: {{ transaction.start_from }}</p>
+        <p>Status: {{ transaction.status }}</p>
+
+        <!-- Form Upload Bukti Pembayaran -->
+        <form (ngSubmit)="onSubmit()" enctype="multipart/form-data">
+          <ion-item>
+            <ion-label position="stacked">Upload Bukti Pembayaran</ion-label>
+            <input type="file" (change)="onFileChange($event)" accept="image/*,application/pdf" />
+          </ion-item>
+
+          <ion-button expand="block" type="submit" [disabled]="!selectedFile">Upload Bukti</ion-button>
+        </form>
+
+        <!-- Pesan sukses -->
+        <ion-text color="primary" *ngIf="uploadSuccess">
+          <p class="ion-padding-start">
+            Bukti berhasil diunggah. Silakan tunggu validasi dari admin.
+          </p>
+        </ion-text>
+
+        <!-- Tombol Kembali -->
+        <ion-button expand="block" color="medium" routerLink="/tabs/tab4">
+          Kembali
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
+
+  <ng-template #errorTemplate>
+    <ion-text color="danger">
+      <p class="ion-padding">{{ error }}</p>
+    </ion-text>
+  </ng-template>
+</ion-content>
+
+<ion-spinner *ngIf="isLoading" name="crescent" class="ion-padding"></ion-spinner>

@@ -42,7 +42,9 @@ export class AuthService {
   }
 
   async getToken() {
-    return this._storage?.get('token');
+    const token = await this._storage?.get('token');
+    console.log('Token dari storage:', token); // Tambahin ini
+    return token;
   }
 
   // Ambil profil dengan header Authorization dari token di Storage

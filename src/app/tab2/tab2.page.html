@@ -11,6 +11,10 @@
 </ion-card>
 
 <ion-content *ngIf="cartItems.length > 0; else emptyCart">
+  <ion-refresher slot="fixed" (ionRefresh)="loadItems($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+  
   <ion-list>
     <ion-item *ngFor="let item of cartItems">
       <ion-label>

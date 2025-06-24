@@ -44,15 +44,32 @@ export class CartService {
     );
   }
 
-  async removeCartItem(itemId: number) {
-    const token = await this.authService.getToken();
-    console.log('DELETE URL:', `${this.apiUrl}/${itemId}`);
-    console.log('Bearer Token:', token);
-    
-    return this.http.delete(`${this.apiUrl}/${itemId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }).toPromise();
+  removeCartItem(itemId: number): Observable<any> {
+    return from(this.authService.getToken()).pipe(
+      switchMap((token) => {
+        const headers = new HttpHeaders({
+          Authorization: `Bearer ${token}`,
+        });
+        return this.http.post(`${this.apiUrl}-delete/${itemId}`, [], { headers });
+      })
+    );
+  }
+
+  checkout(cartItemId: number, paymentType: 'manual' | 'online'): Observable<any> {
+    const url = environment.apiUrl + '/transaction/checkout';
+
+    return from(this.authService.getToken()).pipe(
+      switchMap((token) => {
+        console.log('Token Coyyyy:', token);
+        const headers = new HttpHeaders({
+          Authorization: `Bearer ${token}`,
+        });
+
+        return this.http.post(url, {
+          cart_items_id: cartItemId,
+          payment_type: paymentType,
+        }, { headers });
+      })
+    );
   }
 }

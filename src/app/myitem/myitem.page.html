@@ -1,0 +1,35 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/tab4"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Kendaraan Saya</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="loadTransactions($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-list *ngIf="transactions.length > 0; else noHistory">
+    <ion-card *ngFor="let trx of transactions" (click)="openInAppBrowser(trx.payment_url)" button>
+      <ion-card-header>
+        <ion-card-title>{{ trx.item.name }}</ion-card-title>
+        <ion-card-subtitle>
+          Status: {{ getStatusLabel(trx) }}
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Durasi: {{ trx.days }} hari</p>
+        <p>Tanggal Mulai: {{ trx.start_from }}</p>
+      </ion-card-content>
+    </ion-card>
+  </ion-list>
+
+  <ng-template #noHistory>
+    <ion-text color="medium">
+      <p class="ion-text-center">Belum ada riwayat transaksi.</p>
+    </ion-text>
+  </ng-template>
+</ion-content>

@@ -26,6 +26,18 @@ const routes: Routes = [
     path: 'tab-item/:id',
     loadChildren: () => import('./tab-item/tab-item.module').then(m => m.TabItemPageModule)
   },
+  {
+    path: 'checkout',
+    loadChildren: () => import('./checkout/checkout.module').then( m => m.CheckoutPageModule)
+  },
+  {
+    path: 'myitem',
+    loadChildren: () => import('./myitem/myitem.module').then( m => m.MyitemPageModule)
+  },
+  {
+    path: 'checkout-manual/:id',
+    loadChildren: () => import('./checkout-manual/checkout-manual.module').then( m => m.CheckoutManualPageModule)
+  },
 ];
 @NgModule({
   imports: [

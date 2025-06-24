@@ -2,7 +2,11 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { CartService } from '../services/cart.service';
 import { ItemService, Item } from '../services/item.service';
+import { AlertController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+import { InAppBrowser, DefaultSystemBrowserOptions } from '@capacitor/inappbrowser';
+import { Capacitor } from '@capacitor/core';
+import { Router } from '@angular/router';
 
 interface CartItem {
   id: number;
@@ -10,7 +14,7 @@ interface CartItem {
   days?: number;
   start_from?: string;
   total_price?: number;
-  // tambahkan properti lain sesuai kebutuhan
+  name?: string;
 }
 
 @Component({
@@ -20,17 +24,18 @@ interface CartItem {
   standalone: false,
 })
 export class Tab2Page implements OnInit, OnDestroy {
-  user: any = null;
-  isLoggedIn = false;
-  cartItems: (CartItem & { name?: string })[] = [];
   items: Item[] = [];
-
+  isLoggedIn = false;
+  cartItems: CartItem[] = [];
+  user: any = null;
   private authSub?: Subscription;
 
   constructor(
     private authService: AuthService,
     private cartService: CartService,
     private itemService: ItemService,
+    private alertController: AlertController,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -39,7 +44,7 @@ export class Tab2Page implements OnInit, OnDestroy {
 
       if (isLogged) {
         this.loadUserProfile();
-        this.loadItems();  // load items dulu, baru load cart
+        this.loadItems();
       } else {
         this.user = null;
         this.cartItems = [];
@@ -61,42 +66,117 @@ export class Tab2Page implements OnInit, OnDestroy {
     }
   }
 
-  loadItems() {
+  loadItems(event?: any) {
     this.itemService.getItems().subscribe({
       next: (items) => {
         this.items = items;
-        this.loadCart();
+        this.loadCart(event); // lempar event ke loadCart
       },
       error: (err) => {
         console.error('Gagal load items:', err);
+        if (event) {
+          event.target.complete();
+        }
       }
     });
   }
 
-  loadCart() {
+  loadCart(event?: any) {
     this.cartService.getCartItems().subscribe({
       next: (cart: any[]) => {
         this.cartItems = cart.map(cartItem => ({
           ...cartItem,
           name: cartItem.item?.name || 'Nama item tidak ditemukan',
         }));
+        if (event) {
+          event.target.complete(); // ✅ refresher selesai di sini
+        }
       },
       error: (err) => {
         console.error('Gagal load cart:', err);
+        if (event) {
+          event.target.complete(); // ✅ tetap diselesaikan
+        }
       }
     });
   }
 
   async removeFromCart(item: any) {
-    try {
-      await this.cartService.removeCartItem(item.id);
-      this.cartItems = this.cartItems.filter(ci => ci.id !== item.id);
-    } catch (err) {
-      console.error('Gagal menghapus item dari keranjang:', err);
+    this.cartService.removeCartItem(item.id).subscribe({
+      next: () => {
+        this.loadCart();
+      },
+      error: (err: any) => {
+        console.error('Error hapus cart:', err);
+      }
+    });
+  }
+
+  async onCheckout(item: any) {
+    const alert = await this.alertController.create({
+      header: 'Pilih Metode Pembayaran',
+      buttons: [
+        {
+          text: 'Manual Transfer',
+          handler: () => {
+            this.processCheckout(item.id, 'manual');
+          }
+        },
+        {
+          text: 'Bayar Online (QRIS)',
+          handler: () => {
+            this.processCheckout(item.id, 'online');
+          }
+        },
+        {
+          text: 'Batal',
+          role: 'cancel'
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  processCheckout(cartItemId: number, paymentType: 'manual' | 'online') {
+    this.cartService.checkout(cartItemId, paymentType).subscribe({
+      next: (res: any) => {
+        console.log('Checkout sukses:', res);
+
+        if (paymentType === 'online' && res.payment_url) {
+          this.openInAppBrowser(res.payment_url);
+        } else if (paymentType === 'manual') {
+          this.goToManualCheckout(res.id); // ← pastikan backend return "id" transaksi
+        }
+
+        this.loadCart();
+      },
+      error: (err: any) => {
+        console.error('Gagal checkout:', err);
+        alert('Gagal melakukan checkout.');
+      }
+    });
+  }
+
+  async openInAppBrowser(url: string) {
+    const platform = Capacitor.getPlatform();
+
+    if (platform === 'web') {
+      // fallback web
+      window.open(url, '_blank');
+    } else {
+      // native mobile (Android/iOS)
+      await InAppBrowser.openInSystemBrowser({
+        url,
+        options: DefaultSystemBrowserOptions
+      });
     }
   }
 
-  onCheckout(item: any) {
-    console.log('Checkout item:', item);
+  goToManualCheckout(transactionId: number) {
+    // Misal kamu pakai route bernama checkout_manual/:id
+    // window.location.href = `/checkout_manual/${transactionId}`;
+    // ATAU kalau pakai router Angular (lebih baik):
+    this.router.navigate(['/checkout-manual', transactionId]);
   }
 }
